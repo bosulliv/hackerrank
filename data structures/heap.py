@@ -17,6 +17,19 @@ binary heap:
      / \   /
     2   1 0
 
+A binary heap has these rules:
+
+   * A sub-tree of a max heap must have its biggest value at the top.
+   * It must always be filled left to right, with no gaps on the left.
+
+By this definition, we can add these observations:
+
+   * It doesn't matter if sibling trees are bigger or smaller, so long
+     as the trees have the biggest at the top.
+   * It doesn't matter the order of the left and right nodes when
+     present, they just have to be smaller than all those above.
+   * As such, a binary heap is only partially ordered.
+
 2018-02-28: Pylint score of 9.64/10
 """
 import unittest
