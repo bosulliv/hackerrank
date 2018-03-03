@@ -45,6 +45,10 @@ class Heap(object):
 
     def check_top(self, lst):
         """Check top is biggest"""
+        if not lst:
+            # Empty list is false
+            return False
+        
         return max(lst) == lst[0]
 
     def check(self, lst):
