@@ -30,7 +30,7 @@ By this definition, we can add these observations:
      present, they just have to be smaller than all those above.
    * As such, a binary heap is only partially ordered.
 
-2018-02-28: Pylint score of 9.64/10
+2018-02-28: Pylint score of 9.55/10
 """
 import unittest
 
@@ -43,25 +43,25 @@ class Heap(object):
 
     def check_sides(self, lst):
         """
-        No sides is a valid heap.
-        Left must be full before right.
-        Left must be bigger than right.
+        The are four combinations which are possible and only one is false.
+        The karnaugh map is below:
+
+        [ None, None ] = no nodes is valid               = return True
+        [ 1,    None ] = left side only is valid         = return True
+        [ None, 2    ] = right with no left is not valid = return False
+        [ 1,    2    ] = both sides is valid             = return True
+
+        Hence we only test for the false condition being true - then invert it
+        to create the return code.
         """
-        if not lst[0] and not lst[1]:
-            return True
-        elif not lst[0] and lst[1]:
-            return False
-        elif lst[0] and not lst[1]:
-            return True
-        else:
-            return lst[0] >= lst[1]
+        return not(not lst[0] and lst[1])
 
     def check_top(self, lst):
         """Check top is biggest"""
         if not lst:
             # Empty list is false
             return False
-        
+
         return max(lst) == lst[0]
 
     def check(self, lst):
@@ -128,29 +128,11 @@ class TestHeap(unittest.TestCase):
         lst = []
         self.assertTrue(not heap.check(lst))
 
-    def test_check_equal_sides(self):
-        """equal sides are okay"""
-        heap = Heap()
-        lst = [3, 1, 1]
-        self.assertTrue(heap.check(lst))
-
-    def test_check_right_side_high(self):
-        """larger right side is not okay"""
-        heap = Heap()
-        lst = [3, 1, 2]
-        self.assertTrue(not heap.check(lst))
-
     def test_sides_okay(self):
         """Check sides are okay"""
         heap = Heap()
         lst = [3, 2]
         self.assertTrue(heap.check_sides(lst))
-
-    def test_sides_right_bigger(self):
-        """Check right bigger than left is not okay"""
-        heap = Heap()
-        lst = [2, 3]
-        self.assertTrue(not heap.check_sides(lst))
 
     def test_sides_left_only(self):
         """Check one side is okay"""
