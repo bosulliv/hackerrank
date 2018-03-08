@@ -38,119 +38,107 @@ class Heap(object):
     """
     Binary Heap, using an array.
     """
-    def __init__(self):
-        self.heap = []
+    def __init__(self, heap=[]):
+        self.heap = heap
 
-    def check_sides(self, lst):
+    def parent(self, child):
         """
-        The are four combinations which are possible and only one is false.
-        The karnaugh map is below:
-
-        [ None, None ] = no nodes is valid               = return True
-        [ 1,    None ] = left side only is valid         = return True
-        [ None, 2    ] = right with no left is not valid = return False
-        [ 1,    2    ] = both sides is valid             = return True
-
-        Hence we only test for the false condition being true - then invert it
-        to create the return code.
+        Given the position of a child, return the position of the parent
         """
-        return not(not lst[0] and lst[1])
+        if child % 2 == 0:
+            parent = (child-2)/2
+        else:
+            parent = (child-1)/2
+        return int(parent)
 
-    def check_top(self, lst):
-        """Check top is biggest"""
-        if not lst:
-            # Empty list is false
-            return False
+    def swap(self, child):
+        """ Swap a child with its parent """
+        print('swap')
+        temp = self.heap[child]
+        par = self.parent(child)
+        self.heap[child] = self.heap[par]
+        self.heap[par] = temp
 
-        return max(lst) == lst[0]
-
-    def check(self, lst):
+    def check(self, child):
         """
-        Check a list is a valid binary heap.
-        The top node must be the largest for all elements below.
-        The left must be bigger than the right.
-        Trees must always be filled left to right.
+        Check if a given child is smaller than its parent.
+        If it isn't, swap it. Then keep checking the new
+        parent until its in the correct position.
         """
-        if not lst:
-            # empty list is false
-            return False
-        elif len(lst) == 1:
-            # A single sub-tree is a valid heap
-            return True
-        elif len(lst) in [2, 3]:
-            l_top = self.check_top(lst)
-            l_side = self.check_sides(lst[1:3])
-            log = l_top & l_side
-            return log
+        if child == 0:
+            return
+
+        par = self.parent(child)
+        if self.heap[child] > self.heap[par]:
+            self.swap(child)
+            # After swap, check again
+            self.check(par)
+            self.check(child)
+        else:
+            return
+
+    def heapify(self):
+        """
+        Given a list heap, turn into a binary heap by swapping
+        children with parent if they are larger.
+        The stragegy #1 is to work from the bottom and work our
+        way to the top.
+        """
+        i = len(self.heap) - 1
+        while i > 0:
+            self.check(i)
+            i = i - 1
 
 
 class TestHeap(unittest.TestCase):
     """Don't forget, test cases must begin with word test!"""
-    def test_top_smallest(self):
-        """Check small top is not okay"""
-        heap = Heap()
-        lst = [0, 1, 2]
-        self.assertTrue(not heap.check_top(lst))
+    def test_child_bigger_lvl_1(self):
+        """Position one is in wrong place. Check it moves."""
+        lst = [3, 4, 2, 1, 0]
+        ok_lst = [4, 3, 2, 1, 0]
+        heap = Heap(lst)
+        heap.check(1)
+        self.assertListEqual(heap.heap, ok_lst)
 
-    def test_top_biggest(self):
-        """Check biggest top is okay, with equal sides"""
-        heap = Heap()
-        lst = [2, 1, 1]
-        self.assertTrue(heap.check_top(lst))
+    def test_child_bigger_lvl_2(self):
+        """Position three is in wrong place. Check it moves."""
+        lst = [1, 3, 2, 4, 0]
+        ok_lst = [4, 3, 2, 1, 0]
+        heap = Heap(lst)
+        heap.check(3)
+        self.assertListEqual(heap.heap, ok_lst)
 
-    def test_top_biggest_none(self):
-        """Check top with empty sides"""
-        heap = Heap()
-        lst = [2]
-        self.assertTrue(heap.check_top(lst))
+    def test_child_smaller_lvl_1(self):
+        """Check a valid heap doesn't need to change"""
+        lst = [4, 3, 2, 1, 0]
+        ok_lst = lst
+        heap = Heap(lst)
+        heap.check(1)
+        self.assertListEqual(heap.heap, ok_lst)
 
-    def test_check_smallest(self):
-        """Small top is wrong"""
-        heap = Heap()
-        lst = [0, 1, 2]
-        self.assertTrue(not heap.check(lst))
+    def test_child_smaller_lvl_2(self):
+        """Check a valid heap doesn't need to change"""
+        lst = [4, 3, 2, 1, 0]
+        ok_lst = lst
+        heap = Heap(lst)
+        heap.check(3)
+        self.assertListEqual(heap.heap, ok_lst)
 
-    def test_check_biggest(self):
-        """Large top is good"""
-        heap = Heap()
-        lst = [2, 1, 0]
-        self.assertTrue(heap.check(lst))
+    def test_heapify_swap_1(self):
+        """Check we can heapify a heap with one item in the wrong place"""
+        lst = [1, 3, 2, 4, 0]
+        ok_lst = [4, 3, 2, 1, 0]
+        heap = Heap(lst)
+        heap.heapify()
+        self.assertListEqual(heap.heap, ok_lst)
 
-    def test_check_single_item(self):
-        """Check single item is okay"""
-        heap = Heap()
-        lst = [0]
-        self.assertTrue(heap.check(lst))
-
-    def test_check_empty_item(self):
-        """Empty list is not okay"""
-        heap = Heap()
-        lst = []
-        self.assertTrue(not heap.check(lst))
-
-    def test_sides_okay(self):
-        """Check sides are okay"""
-        heap = Heap()
-        lst = [3, 2]
-        self.assertTrue(heap.check_sides(lst))
-
-    def test_sides_left_only(self):
-        """Check one side is okay"""
-        heap = Heap()
-        lst = [3, None]
-        self.assertTrue(heap.check_sides(lst))
-
-    def test_sides_none(self):
-        """Check None is okay"""
-        heap = Heap()
-        lst = [None, None]
-        self.assertTrue(heap.check_sides(lst))
-
-    def test_sides_right_only(self):
-        """Check right only is not okay"""
-        heap = Heap()
-        lst = [None, 2]
-        self.assertTrue(not heap.check_sides(lst))
+    def test_heapify_swap_all(self):
+        """Check we cna heapify a worst case heap. Back to front"""
+        lst = [0, 1, 2, 3, 4]
+        ok_lst = [4, 3, 2, 1, 0]
+        heap = Heap(lst)
+        heap.heapify()
+        self.assertListEqual(heap.heap, ok_lst)
 
 if __name__ == '__main__':
     unittest.main()
